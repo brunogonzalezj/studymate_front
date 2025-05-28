@@ -22,7 +22,7 @@ export default function OnboardingPage() {
       // Simulate completion
       setTimeout(() => {
         setIsLoading(false)
-        router.push("/dashboard")
+        router.push("/login")
       }, 1000)
     }
   }
