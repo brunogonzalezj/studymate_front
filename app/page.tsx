@@ -53,7 +53,7 @@ export default function Home() {
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                   3
                 </div>
-                <div>Practica con flashcards y tests generados automáticamente</div>
+                <div className={"text-left"}>Practica con flashcards y tests generados automáticamente</div>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
