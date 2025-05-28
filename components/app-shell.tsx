@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
@@ -11,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
+import Image from "next/image";
 
 interface AppShellProps {
   children: React.ReactNode
@@ -21,6 +20,7 @@ export function AppShell({ children }: AppShellProps) {
   const { theme, setTheme } = useTheme()
   const [isMounted, setIsMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [usuario, setUsuario] = useState<{ nombre: string; correo: string } | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
@@ -59,6 +59,11 @@ export function AppShell({ children }: AppShellProps) {
     },
   ]
 
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+    setUsuario(usuario)
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -79,10 +84,8 @@ export function AppShell({ children }: AppShellProps) {
                       className="flex items-center gap-2 font-semibold"
                       onClick={() => setIsOpen(false)}
                     >
-                      <div className="h-6 w-6 rounded bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
-                        S
-                      </div>
-                      <span>StudyMate</span>
+                      <Image src={"/logo_studymate.jpeg"} alt={"Logo StudyMate"} width={32} height={32} className="rounded-xl" />
+                        <span className="hidden md:inline">StudyMate</span>
                     </Link>
                   </div>
                   <nav className="flex-1 overflow-auto">
@@ -110,8 +113,8 @@ export function AppShell({ children }: AppShellProps) {
                         <AvatarFallback>JP</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">Juan Pérez</div>
-                        <div className="text-xs text-muted-foreground">juan@ejemplo.com</div>
+                        <div className="font-medium">{usuario?.nombre}</div>
+                        <div className="text-xs text-muted-foreground">{usuario?.correo}</div>
                       </div>
                     </div>
                     <div className="grid gap-1">
@@ -155,10 +158,8 @@ export function AppShell({ children }: AppShellProps) {
               </SheetContent>
             </Sheet>
             <Link href="/dashboard" className="flex items-center gap-2 font-semibold ml-2 md:ml-0">
-              <div className="h-6 w-6 rounded bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
-                S
-              </div>
-              <span className="hidden md:inline-block">StudyMate</span>
+              <Image src={"/logo_studymate.jpeg"} alt={"Logo StudyMate"} width={44} height={32} className="rounded-xl" />
+                <span className="hidden md:inline">StudyMate</span>
             </Link>
           </div>
           <div className="flex items-center gap-2">
@@ -201,8 +202,8 @@ export function AppShell({ children }: AppShellProps) {
                 <AvatarFallback>JP</AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium">Juan Pérez</div>
-                <div className="text-xs text-muted-foreground">juan@ejemplo.com</div>
+                <div className="font-medium">{usuario?.nombre}</div>
+                <div className="text-xs text-muted-foreground">{usuario?.correo}</div>
               </div>
             </div>
             <div className="grid gap-1">

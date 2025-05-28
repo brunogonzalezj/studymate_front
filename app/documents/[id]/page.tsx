@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import {useEffect, useState} from "react"
 import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,70 +10,78 @@ import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
+interface Documento {
+  id: number;
+    titulo: string;
+  materia: string;
+    tema: string;
+    fechaSubida: number;
+}
+
+interface Summary {
+    id: number;
+    contenido: string;
+}
+
 export default function DocumentPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("summary")
+  const [summary, setSummary] = useState<Summary | null>(null)
+  const [documentApi, setDocumentApi] = useState<Documento | null>(null)
+    const [flashcards, setFlashcards] = useState<{ pregunta: string; respuesta: string }[]>([])
 
-  // Mock data
-  const document = {
-    id: params.id,
-    title: "Resumen de Cálculo Diferencial",
-    subject: "Matemáticas",
-    topic: "Límites y Continuidad",
-    date: "10 Abr 2023",
-    type: "extended",
-    content: `
-      <h2>Introducción a los Límites</h2>
-      <p>El concepto de límite es fundamental en el cálculo diferencial. Un límite describe el comportamiento de una función cuando su variable independiente se acerca a un valor específico.</p>
-      
-      <h3>Definición formal</h3>
-      <p>Sea f una función definida en un intervalo abierto que contiene a a, excepto posiblemente en a mismo. El límite de f(x) cuando x tiende a a es L, y se escribe:</p>
-      <p class="formula">lim f(x) = L</p>
-      <p class="formula">x→a</p>
-      
-      <p>Si para todo ε > 0, existe un δ > 0 tal que si 0 < |x - a| < δ, entonces |f(x) - L| < ε.</p>
-      
-      <h3>Propiedades de los límites</h3>
-      <ul>
-        <li>Límite de una suma: lim[f(x) + g(x)] = lim f(x) + lim g(x)</li>
-        <li>Límite de un producto: lim[f(x) · g(x)] = lim f(x) · lim g(x)</li>
-        <li>Límite de un cociente: lim[f(x)/g(x)] = lim f(x) / lim g(x), siempre que lim g(x) ≠ 0</li>
-      </ul>
-      
-      <h2>Continuidad de Funciones</h2>
-      <p>Una función f es continua en un punto a si se cumplen las siguientes condiciones:</p>
-      <ol>
-        <li>f(a) está definida</li>
-        <li>lim f(x) existe cuando x→a</li>
-        <li>lim f(x) = f(a) cuando x→a</li>
-      </ol>
-      
-      <p>Una función es continua en un intervalo si es continua en cada punto del intervalo.</p>
-      
-      <h3>Tipos de discontinuidades</h3>
-      <ul>
-        <li><strong>Discontinuidad evitable:</strong> El límite existe pero no coincide con el valor de la función, o la función no está definida en ese punto.</li>
-        <li><strong>Discontinuidad de salto:</strong> Los límites laterales existen pero son diferentes.</li>
-        <li><strong>Discontinuidad infinita:</strong> Al menos uno de los límites laterales es infinito.</li>
-      </ul>
-    `,
-    flashcards: [
-      {
-        question: "¿Qué es un límite en cálculo?",
-        answer:
-          "Un límite describe el comportamiento de una función cuando su variable independiente se acerca a un valor específico.",
-      },
-      {
-        question: "¿Cuáles son las condiciones para que una función sea continua en un punto?",
-        answer: "1) f(a) está definida, 2) lim f(x) existe cuando x→a, 3) lim f(x) = f(a) cuando x→a",
-      },
-      {
-        question: "Menciona los tipos de discontinuidades",
-        answer: "Discontinuidad evitable, discontinuidad de salto y discontinuidad infinita.",
-      },
-      { question: "¿Cuál es la propiedad del límite de una suma?", answer: "lim[f(x) + g(x)] = lim f(x) + lim g(x)" },
-    ],
-  }
+  useEffect(() => {
+    const fetchDocument = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/documents/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Error al cargar el documento');
+        }
+        const data = await response.json();
+        setDocumentApi(data);
+      } catch (error) {
+        console.error('Error:', error);
+        // Manejar el error (mostrar mensaje, etc.)
+      }
+    };
+
+    fetchDocument();
+  }, []);
+
+  useEffect(()=> {
+    const fetchSummary = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/documents/resumen/${params.id}/`);
+            if (!response.ok) {
+            throw new Error('Error al cargar el resumen');
+            }
+            const data = await response.json();
+            setSummary(data);
+        } catch (error) {
+            console.error('Error:', error);
+            // Manejar el error (mostrar mensaje, etc.)
+        }
+    }
+    fetchSummary();
+  }, [])
+
+  useEffect(() => {
+    const fetchFlashcards = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/documents/flashcards/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Error al cargar las flashcards');
+        }
+        const data = await response.json();
+        setFlashcards(data || []);
+      } catch (error) {
+        console.error('Error:', error);
+        // Manejar el error (mostrar mensaje, etc.)
+
+      }
+    }
+    fetchFlashcards();
+  }, []);
 
   return (
     <AppShell>
@@ -86,15 +94,15 @@ export default function DocumentPage({ params }: { params: { id: string } }) {
             </div>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">{document.title}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{documentApi?.titulo || 'Titulo no disponible'}</h1>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Badge variant="outline" className="text-xs">
-                {document.subject}
+                {documentApi?.materia || 'Materia no disponible'}
               </Badge>
               <span>•</span>
-              <span className="text-sm">{document.topic}</span>
+              <span className="text-sm">{documentApi?.tema || "Tema no disponible" }</span>
               <span>•</span>
-              <span className="text-sm">{document.date}</span>
+              <span className="text-sm">{new Date(documentApi?.fechaSubida).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
@@ -136,24 +144,24 @@ export default function DocumentPage({ params }: { params: { id: string } }) {
               </div>
               <div
                 className="prose prose-sm dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: document.content }}
+                dangerouslySetInnerHTML={{ __html: summary?.contenido || "No se encontró resumen" }}
               />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="flashcards" className="mt-4">
           <div className="grid gap-4">
-            {document.flashcards.map((card, index) => (
+            {flashcards.map((card, index) => (
               <Card key={index} className="overflow-hidden">
                 <CardContent className="p-0">
                   <div className="p-6">
                     <h3 className="font-medium mb-2">Pregunta:</h3>
-                    <p>{card.question}</p>
+                    <p>{card?.pregunta}</p>
                   </div>
                   <Separator />
                   <div className="p-6">
                     <h3 className="font-medium mb-2">Respuesta:</h3>
-                    <p>{card.answer}</p>
+                    <p>{card?.respuesta}</p>
                   </div>
                 </CardContent>
               </Card>

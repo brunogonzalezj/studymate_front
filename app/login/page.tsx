@@ -15,16 +15,48 @@ export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/dashboard")
-    }, 1000)
-  }
+    try {
+      const formData = new FormData(e.currentTarget);
+      const correo = formData.get('email') as string;
+      const contrasena = formData.get('password') as string;
+
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          correo,
+          contrasena,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(`Error: ${data.error || 'Error al iniciar sesión'}`);
+        setIsLoading(false);
+        return;
+      }
+
+      localStorage.removeItem('usuario');
+      // Guardar la información del usuario (puedes usar localStorage, cookies o un contexto)
+      localStorage.setItem('usuario', JSON.stringify(data.usuario));
+      console.log(data.usuario);
+
+      // Redirigir al dashboard o a la página principal
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Error de red:', error);
+      alert('Error de conexión. Inténtalo de nuevo más tarde.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
@@ -42,13 +74,13 @@ export default function LoginPage() {
           <CardDescription>Ingresa tus credenciales para acceder a tu cuenta</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <form onSubmit={handleSubmit} className="grid gap-4">
+          <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Correo electrónico</Label>
-              <Input id="email" type="email" placeholder="tu@ejemplo.com" required />
+              <Input id="email" name={"email"} type="email" placeholder="tu@ejemplo.com" required />
             </div>
             <div className="grid gap-2">
-              <Input id="password" type="password" placeholder="••••••••" required />
+              <Input id="password" name={"password"} type="password" placeholder="••••••••" required />
             </div>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}

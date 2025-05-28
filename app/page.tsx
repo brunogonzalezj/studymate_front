@@ -18,11 +18,11 @@ export default function Home() {
           <div className="flex justify-center">
             <div className="relative w-24 h-24 mb-4">
               <Image
-                src="/placeholder.svg?height=96&width=96"
+                src="/logo_studymate.jpeg"
                 alt="StudyMate Logo"
-                width={96}
-                height={96}
-                className="rounded-xl bg-primary p-2"
+                width={240}
+                height={120}
+                className="rounded-xl bg-primary p-2 w-full h-24"
               />
             </div>
           </div>
